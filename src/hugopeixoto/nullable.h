@@ -38,9 +38,20 @@ template <typename T> struct Nullable {
 
   operator const T &() const { return get(); }
 
+  bool operator==(const Nullable<T>& other) const {
+    if (null() || other.null()) {
+      return null() && other.null();
+    } else {
+      return get() == other.get();
+    }
+  }
+
+  bool operator!=(const Nullable<T>& other) const {
+    return !(operator==(other));
+  }
+
   void null_guard() const {
     if (null()) {
-      // print_stack();
       throw null_exception();
     }
   }
@@ -48,15 +59,6 @@ template <typename T> struct Nullable {
   bool null() const { return is_null; }
 
 protected:
-  // void print_stack() const {
-  //  void *last_frames[20];
-  //  size_t last_size;
-
-  //  last_size = backtrace(last_frames, sizeof(last_frames) / sizeof(void *));
-
-  //  backtrace_symbols_fd(last_frames, last_size, 2);
-  //}
-
   bool is_null;
   T value;
 };
