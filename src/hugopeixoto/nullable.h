@@ -38,7 +38,7 @@ template <typename T> struct Nullable {
 
   operator const T &() const { return get(); }
 
-  bool operator==(const Nullable<T>& other) const {
+  bool operator==(const Nullable<T> &other) const {
     if (null() || other.null()) {
       return null() && other.null();
     } else {
@@ -46,7 +46,7 @@ template <typename T> struct Nullable {
     }
   }
 
-  bool operator!=(const Nullable<T>& other) const {
+  bool operator!=(const Nullable<T> &other) const {
     return !(operator==(other));
   }
 
