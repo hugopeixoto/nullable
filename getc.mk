@@ -1,7 +1,7 @@
 LD=clang
 CXX=clang++
 
-LIBNAME=hugopeixoto-nullable
+LIBNAME=hugopeixoto-optional
 REQUIRED_LIBS=
 INCLUDE_PATH=src/
 
