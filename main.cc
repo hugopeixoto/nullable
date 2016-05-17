@@ -1,22 +1,38 @@
 #include "hugopeixoto/optional.h"
 #include <iostream>
+#include <string>
 
 int main() {
-  Optional<int> x(1);
-  Optional<int> y;
-  Optional<int> z(2);
+  auto repeat = [](auto x) { return x+" "+x+" "+x; };
+  auto blacklist = [](auto x) {
+    if (x == "spam") {
+      return Optional<std::string>();
+    } else {
+      return Optional<std::string>(x);
+    }
+  };
 
-  std::cout << !x.null() << std::endl;
-  std::cout << y.null() << std::endl;
-  std::cout << (x == x) << std::endl;
-  std::cout << (y == y) << std::endl;
-  std::cout << (y != x) << std::endl;
-  std::cout << (x != z) << std::endl;
+  const auto values = {
+    Optional<std::string>("echo"),
+    Optional<std::string>("spam"),
+    Optional<std::string>()
+  };
 
-  std::cout << "x value: " << x.unwrap() << std::endl;
+  for (auto v : values)
+    std::cout << v.none() << std::endl;
+
+  for (auto v : values)
+    std::cout << v.orDefault("empty") << std::endl;
+
+  for (const auto& v : values)
+    std::cout << v.map(repeat).orDefault("empty") << std::endl;
+
+  for (const auto& v : values)
+    std::cout << v.then(blacklist).orDefault("empty") << std::endl;
 
   try {
-    std::cout << "y value: " << y.unwrap() << std::endl;
+    for (const auto& v : values)
+      std::cout << v.unwrap() << std::endl;
   } catch (none_exception e) {
     std::cout << "caught exception: " << e.what() << std::endl;
   }

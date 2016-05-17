@@ -13,35 +13,52 @@ public:
 template <typename T> struct Optional {
   typedef T type;
 
-  Optional() : is_null(true) { }
+  Optional() : is_none(true) { }
 
-  Optional(const T &v) : is_null(false), value(v) { }
+  Optional(const T &v) : is_none(false), value(v) { }
 
-  bool null() const { return is_null; }
+  bool none() const { return is_none; }
 
   const T &unwrap() const {
-    null_guard();
+    none_guard();
 
     return value;
   }
 
   T &unwrap() {
-    null_guard();
+    none_guard();
 
     return value;
   }
 
   template<typename F>
+  auto map(F pred) const {
+    if (none()) {
+      return Optional<decltype(pred(T()))>();
+    } else {
+      return Optional(pred(unwrap()));
+    }
+  }
+
+  template<typename F>
   auto then(F pred) const {
-    if (null()) {
+    if (none()) {
       return Optional<typename decltype(pred(T()))::type>();
     } else {
       return pred(unwrap());
     }
   }
 
+  auto orDefault(const T& def) const {
+    if (none()) {
+      return def;
+    } else {
+      return unwrap();
+    }
+  }
+
   auto orElse(const T& def) const {
-    if (null()) {
+    if (none()) {
       return decltype(*this)(def);
     } else {
       return *this;
@@ -49,8 +66,8 @@ template <typename T> struct Optional {
   }
 
   bool operator==(const Optional<T> &other) const {
-    if (null() || other.null()) {
-      return null() && other.null();
+    if (none() || other.none()) {
+      return none() && other.none();
     } else {
       return unwrap() == other.unwrap();
     }
@@ -61,18 +78,18 @@ template <typename T> struct Optional {
   }
 
 protected:
-  void null_guard() const {
-    if (null()) {
+  void none_guard() const {
+    if (none()) {
       throw none_exception();
     }
   }
 
-  bool is_null;
+  bool is_none;
   T value;
 };
 
-template <typename T> bool is_null(const Optional<T> &v) { return v.null(); }
+template <typename T> bool is_none(const Optional<T> &v) { return v.none(); }
 
-template <typename T> bool is_null(const T &v) { return false; }
+template <typename T> bool is_none(const T &v) { return false; }
 
 #endif
