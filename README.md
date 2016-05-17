@@ -1,7 +1,7 @@
-nullable
+optional
 ========
 
-Auxiliar library to handle null values safely.
+Auxiliar library to handle empty values safely.
 
 Example usage:
 
