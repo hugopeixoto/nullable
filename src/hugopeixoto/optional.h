@@ -66,11 +66,27 @@ template <typename T> struct Optional {
   }
 
   bool operator==(const Optional<T> &other) const {
-    if (none() || other.none()) {
-      return none() && other.none();
-    } else {
-      return unwrap() == other.unwrap();
+    if (other.none()) {
+      return none();
     }
+
+    if (none()) {
+      return false;
+    }
+
+    return unwrap() == other.unwrap();
+  }
+
+  bool operator<(const Optional<T> &other) const {
+    if (other.none()) {
+      return false;
+    }
+
+    if (none()) {
+      return true;
+    }
+
+    return unwrap() < other.unwrap();
   }
 
   bool operator!=(const Optional<T> &other) const {
