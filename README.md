@@ -48,3 +48,23 @@ int main() {
   return 0;
 }
 ```
+
+Output:
+
+```
+0
+0
+1
+echo
+spam
+empty
+echo echo echo
+spam spam spam
+empty
+echo
+empty
+empty
+echo
+spam
+caught exception: trying to access an empty value
+```
