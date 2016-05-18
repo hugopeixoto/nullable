@@ -36,7 +36,7 @@ template <typename T> struct Optional {
     if (none()) {
       return Optional<decltype(pred(T()))>();
     } else {
-      return Optional(pred(unwrap()));
+      return Optional<decltype(pred(T()))>(pred(unwrap()));
     }
   }
 
@@ -57,7 +57,7 @@ template <typename T> struct Optional {
     }
   }
 
-  auto orElse(const T& def) const {
+  auto orElse(const Optional<T>& def) const {
     if (none()) {
       return decltype(*this)(def);
     } else {
