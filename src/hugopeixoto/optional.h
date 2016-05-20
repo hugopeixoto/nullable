@@ -31,6 +31,21 @@ template <typename T> struct Optional {
     return value;
   }
 
+  template<typename F, typename U>
+  auto map(U (F::*pred)() const) const {
+    return map([&](auto e){ return (e.*pred)(); });
+  }
+
+  template<typename F, typename U>
+  auto map(U (F::*pred)()) const {
+    return map([&](auto e){ return (e.*pred)(); });
+  }
+
+  template<typename F, typename U>
+  auto map(U F::*pred) const {
+    return map([&](auto e){ return e.*pred; });
+  }
+
   template<typename F>
   auto map(F pred) const {
     if (none()) {

@@ -22,6 +22,10 @@ int main() {
     std::cout << v.none() << std::endl;
 
   for (auto v : values)
+    std::cout << v.map(&std::string::size).orDefault(0) << std::endl;
+
+  std::cout << "default:" << std::endl;
+  for (auto v : values)
     std::cout << v.orDefault("empty") << std::endl;
 
   for (const auto& v : values)
