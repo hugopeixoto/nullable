@@ -1,7 +1,7 @@
 optional
 ========
 
-Auxiliar library to handle empty values safely.
+Library that extends `std::optional` with some extra helpers.
 
 Example usage:
 
@@ -14,36 +14,36 @@ int main() {
   auto repeat = [](auto x) { return x+" "+x+" "+x; };
   auto blacklist = [](auto x) {
     if (x == "spam") {
-      return Optional<std::string>();
+      return optional<std::string>();
     } else {
-      return Optional<std::string>(x);
+      return optional<std::string>(x);
     }
   };
 
   const auto values = {
-    Optional<std::string>("echo"),
-    Optional<std::string>("spam"),
-    Optional<std::string>()
+    optional<std::string>("echo"),
+    optional<std::string>("spam"),
+    optional<std::string>()
   };
 
+  std::cout << "map:" << std::endl;
   for (auto v : values)
-    std::cout << v.none() << std::endl;
-
-  for (auto v : values)
-    std::cout << v.orDefault("empty") << std::endl;
+    std::cout << v.map(&std::string::size).value_or(0) << std::endl;
 
   for (const auto& v : values)
-    std::cout << v.map(repeat).orDefault("empty") << std::endl;
+    std::cout << v.map(repeat).value_or("empty") << std::endl;
 
+  std::cout << "then:" << std::endl;
   for (const auto& v : values)
-    std::cout << v.then(blacklist).orDefault("empty") << std::endl;
+    std::cout << v.then(blacklist).value_or("empty") << std::endl;
 
-  try {
-    for (const auto& v : values)
-      std::cout << v.unwrap() << std::endl;
-  } catch (none_exception e) {
-    std::cout << "caught exception: " << e.what() << std::endl;
-  }
+  auto empty = optional<int>();
+  auto some  = optional<int>(1);
+
+  std::cout << (empty < empty) << (empty == empty) << std::endl;
+  std::cout << (empty < some)  << (empty == some)  << std::endl;
+  std::cout << (some < empty)  << (some == empty)  << std::endl;
+  std::cout << (some < some)   << (some == some)   << std::endl;
 
   return 0;
 }
@@ -52,19 +52,19 @@ int main() {
 Output:
 
 ```
+map:
+4
+4
 0
-0
-1
-echo
-spam
-empty
 echo echo echo
 spam spam spam
 empty
+then:
 echo
 empty
 empty
-echo
-spam
-caught exception: trying to access an empty value
+01
+10
+00
+01
 ```

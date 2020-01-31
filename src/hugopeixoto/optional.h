@@ -1,34 +1,26 @@
 #ifndef HUGOPEIXOTO_OPTIONAL_H_
 #define HUGOPEIXOTO_OPTIONAL_H_
 
-#include <exception>
+#include <optional>
 
-class none_exception : public std::exception {
-public:
-  virtual const char *what() const noexcept {
-    return "trying to access an empty value";
-  }
-};
+template <typename T> struct optional : public std::optional<T> {
+  using std::optional<T>::optional;
 
-template <typename T> struct Optional {
-  typedef T type;
-
-  Optional() : is_none(true) { }
-
-  Optional(const T &v) : is_none(false), value(v) { }
-
-  bool none() const { return is_none; }
-
-  const T &unwrap() const {
-    none_guard();
-
-    return value;
+  bool operator<(const optional<T>& rhs) const {
+    return
+      ((const std::optional<T>&)*this) <
+      ((const std::optional<T>&)rhs);
   }
 
-  T &unwrap() {
-    none_guard();
+  bool operator==(const optional<T>& rhs) const {
+    return
+      ((const std::optional<T>&)*this) ==
+      ((const std::optional<T>&)rhs);
+  }
 
-    return value;
+  template<typename F, typename U>
+  auto map(U (F::*pred)() const noexcept) const {
+    return map([&](auto e){ return (e.*pred)(); });
   }
 
   template<typename F, typename U>
@@ -38,7 +30,7 @@ template <typename T> struct Optional {
 
   template<typename F, typename U>
   auto map(U (F::*pred)()) const {
-    return map([&](auto e){ return (e.*pred)(); });
+    return map([&pred](auto e){ return (e.*pred)(); });
   }
 
   template<typename F, typename U>
@@ -48,79 +40,33 @@ template <typename T> struct Optional {
 
   template<typename F>
   auto map(F pred) const {
-    if (none()) {
-      return Optional<decltype(pred(T()))>();
+    typedef decltype(pred(std::declval<T>())) Ret;
+
+    if (!this->has_value()) {
+      return optional<Ret>();
     } else {
-      return Optional<decltype(pred(T()))>(pred(unwrap()));
+      return optional<Ret>(pred(**this));
     }
   }
 
   template<typename F>
   auto then(F pred) const {
-    if (none()) {
-      return Optional<typename decltype(pred(T()))::type>();
+    typedef decltype(pred(std::declval<T>())) Ret;
+
+    if (!this->has_value()) {
+      return Ret();
     } else {
-      return pred(unwrap());
+      return pred(**this);
     }
   }
 
-  auto orDefault(const T& def) const {
-    if (none()) {
-      return def;
-    } else {
-      return unwrap();
-    }
-  }
-
-  auto orElse(const Optional<T>& def) const {
-    if (none()) {
+  auto or_else(const optional<T>& def) const {
+    if (!this->has_value()) {
       return decltype(*this)(def);
     } else {
       return *this;
     }
   }
-
-  bool operator==(const Optional<T> &other) const {
-    if (other.none()) {
-      return none();
-    }
-
-    if (none()) {
-      return false;
-    }
-
-    return unwrap() == other.unwrap();
-  }
-
-  bool operator<(const Optional<T> &other) const {
-    if (other.none()) {
-      return false;
-    }
-
-    if (none()) {
-      return true;
-    }
-
-    return unwrap() < other.unwrap();
-  }
-
-  bool operator!=(const Optional<T> &other) const {
-    return !(operator==(other));
-  }
-
-protected:
-  void none_guard() const {
-    if (none()) {
-      throw none_exception();
-    }
-  }
-
-  bool is_none;
-  T value;
 };
-
-template <typename T> bool is_none(const Optional<T> &v) { return v.none(); }
-
-template <typename T> bool is_none(const T &v) { return false; }
 
 #endif
