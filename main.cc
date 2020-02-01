@@ -29,13 +29,13 @@ int main() {
   for (const auto& v : values)
     std::cout << v.then(blacklist).value_or("empty") << std::endl;
 
-  auto empty = optional<int>();
-  auto some  = optional<int>(1);
+  int x = 10;
+  auto optref = optional<int&>(x);
 
-  std::cout << (empty < empty) << (empty == empty) << std::endl;
-  std::cout << (empty < some)  << (empty == some)  << std::endl;
-  std::cout << (some < empty)  << (some == empty)  << std::endl;
-  std::cout << (some < some)   << (some == some)   << std::endl;
+  std::cout << *optref.map([](auto a) { return a*a; }) << std::endl;
+  std::cout << *(optref.then([](auto a) { return optional<int>(a*a); })) << std::endl;
+  std::cout << optref.has_value() << std::endl;
+  std::cout << optref.value_or(x) << std::endl;
 
   return 0;
 }

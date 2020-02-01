@@ -1,27 +1,33 @@
-#ifndef HUGOPEIXOTO_OPTIONAL_H_
-#define HUGOPEIXOTO_OPTIONAL_H_
+#ifndef HUGOPEIXOTO_OPTIONAL_REFERENCE_H_
+#define HUGOPEIXOTO_OPTIONAL_REFERENCE_H_
 
 #include <optional>
 
-template <typename T> struct optional : public std::optional<T> {
-  using std::optional<T>::optional;
+template <typename T> struct optional<T&> : private std::optional<T*> {
+  optional() { }
+  optional(T& ref) : std::optional<T*>(&ref) { }
 
-  bool operator<(const optional<T>& rhs) const {
+  typedef std::optional<T*> super;
+  T& operator*() const { return *super::operator*(); }
+  bool has_value() const { return super::has_value(); }
+  T& value_or(T& def) const { return *super::value_or(&def); }
+
+  bool operator<(const optional<T&>& rhs) const {
     return
-      ((const std::optional<T>&)*this) <
-      ((const std::optional<T>&)rhs);
+      ((const std::optional<T*>&)*this) <
+      ((const std::optional<T*>&)rhs);
   }
 
   bool operator!=(const optional<T>& rhs) const {
     return
-      ((const std::optional<T>&)*this) !=
-      ((const std::optional<T>&)rhs);
+      ((const std::optional<T*>&)*this) !=
+      ((const std::optional<T*>&)rhs);
   }
 
   bool operator==(const optional<T>& rhs) const {
     return
-      ((const std::optional<T>&)*this) ==
-      ((const std::optional<T>&)rhs);
+      ((const std::optional<T*>&)*this) ==
+      ((const std::optional<T*>&)rhs);
   }
 
   template<typename F, typename U>
@@ -55,9 +61,19 @@ template <typename T> struct optional : public std::optional<T> {
     }
   }
 
+  template<typename A>
+  struct is_optional : public std::false_type {};
+
+  template<typename A>
+  struct is_optional<optional<A>> : public std::true_type {};
+
   template<typename F>
   auto then(F pred) const {
     typedef decltype(pred(std::declval<T>())) Ret;
+    static_assert(
+      is_optional<Ret>::value,
+      "function must return an optional"
+    );
 
     if (!this->has_value()) {
       return Ret();
@@ -65,16 +81,6 @@ template <typename T> struct optional : public std::optional<T> {
       return pred(**this);
     }
   }
-
-  auto or_else(const optional<T>& def) const {
-    if (!this->has_value()) {
-      return decltype(*this)(def);
-    } else {
-      return *this;
-    }
-  }
 };
-
-#include "hugopeixoto/optional_reference.h"
 
 #endif
