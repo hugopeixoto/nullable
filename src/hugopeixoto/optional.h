@@ -75,6 +75,4 @@ template <typename T> struct optional : public std::optional<T> {
   }
 };
 
-#include "hugopeixoto/optional_reference.h"
-
 #endif
