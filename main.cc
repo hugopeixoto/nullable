@@ -2,32 +2,37 @@
 #include <iostream>
 #include <string>
 
+auto password_from_env() {
+  auto pw = std::getenv("PASSWORD");
+  if (pw == nullptr) {
+    return hugopeixoto::optional<std::string>();
+  } else {
+    return hugopeixoto::optional<std::string>(pw);
+  }
+}
+
+auto password_from_file() {
+  return hugopeixoto::optional<std::string>();
+}
+
+auto login_token(const std::string& password) {
+  if (password == "hunter2") {
+    return hugopeixoto::optional<std::string>("0x0DEFACED");
+  } else {
+    return hugopeixoto::optional<std::string>();
+  }
+}
+
 int main() {
-  auto repeat = [](auto x) { return x+" "+x+" "+x; };
-  auto blacklist = [](auto x) {
-    if (x == "spam") {
-      return optional<std::string>();
-    } else {
-      return optional<std::string>(x);
-    }
-  };
+  const auto token = password_from_env()
+    .or_else(&password_from_file)
+    .then(&login_token);
 
-  const auto values = {
-    optional<std::string>("echo"),
-    optional<std::string>("spam"),
-    optional<std::string>()
-  };
+  const auto header = token.map([](const auto& password) {
+    return "Authorization: Bearer " + password;
+  }).value_or("Authorization: none");
 
-  std::cout << "map:" << std::endl;
-  for (auto v : values)
-    std::cout << v.map(&std::string::size).value_or(0) << std::endl;
-
-  for (const auto& v : values)
-    std::cout << v.map(repeat).value_or("empty") << std::endl;
-
-  std::cout << "then:" << std::endl;
-  for (const auto& v : values)
-    std::cout << v.then(blacklist).value_or("empty") << std::endl;
+  std::cout << header << std::endl;
 
   return 0;
 }

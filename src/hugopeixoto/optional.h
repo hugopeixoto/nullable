@@ -3,49 +3,40 @@
 
 #include <optional>
 
+namespace hugopeixoto {
 template <typename T> struct optional : public std::optional<T> {
   using std::optional<T>::optional;
 
-  bool operator<(const optional<T>& rhs) const {
-    return
-      ((const std::optional<T>&)*this) <
-      ((const std::optional<T>&)rhs);
+  bool operator<(const optional<T> &rhs) const {
+    return ((const std::optional<T> &)*this) < ((const std::optional<T> &)rhs);
   }
 
-  bool operator!=(const optional<T>& rhs) const {
-    return
-      ((const std::optional<T>&)*this) !=
-      ((const std::optional<T>&)rhs);
+  bool operator!=(const optional<T> &rhs) const {
+    return ((const std::optional<T> &)*this) != ((const std::optional<T> &)rhs);
   }
 
-  bool operator==(const optional<T>& rhs) const {
-    return
-      ((const std::optional<T>&)*this) ==
-      ((const std::optional<T>&)rhs);
+  bool operator==(const optional<T> &rhs) const {
+    return ((const std::optional<T> &)*this) == ((const std::optional<T> &)rhs);
   }
 
-  template<typename F, typename U>
+  template <typename F, typename U>
   auto map(U (F::*pred)() const noexcept) const {
-    return map([&](auto e){ return (e.*pred)(); });
+    return map([&](auto e) { return (e.*pred)(); });
   }
 
-  template<typename F, typename U>
-  auto map(U (F::*pred)() const) const {
-    return map([&](auto e){ return (e.*pred)(); });
+  template <typename F, typename U> auto map(U (F::*pred)() const) const {
+    return map([&](auto e) { return (e.*pred)(); });
   }
 
-  template<typename F, typename U>
-  auto map(U (F::*pred)()) const {
-    return map([&pred](auto e){ return (e.*pred)(); });
+  template <typename F, typename U> auto map(U (F::*pred)()) const {
+    return map([&pred](auto e) { return (e.*pred)(); });
   }
 
-  template<typename F, typename U>
-  auto map(U F::*pred) const {
-    return map([&](auto e){ return e.*pred; });
+  template <typename F, typename U> auto map(U F::*pred) const {
+    return map([&](auto e) { return e.*pred; });
   }
 
-  template<typename F>
-  auto map(F pred) const {
+  template <typename F> auto map(F pred) const {
     typedef decltype(pred(std::declval<T>())) Ret;
 
     if (!this->has_value()) {
@@ -55,8 +46,7 @@ template <typename T> struct optional : public std::optional<T> {
     }
   }
 
-  template<typename F>
-  auto then(F pred) const {
+  template <typename F> auto then(F pred) const {
     typedef decltype(pred(std::declval<T>())) Ret;
 
     if (!this->has_value()) {
@@ -66,13 +56,14 @@ template <typename T> struct optional : public std::optional<T> {
     }
   }
 
-  auto or_else(const optional<T>& def) const {
+  template <typename F> auto or_else(const F pred) const {
     if (!this->has_value()) {
-      return decltype(*this)(def);
+      return pred();
     } else {
       return *this;
     }
   }
 };
+}
 
 #endif
